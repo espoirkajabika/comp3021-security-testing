@@ -1,0 +1,58 @@
+---
+###############################
+###############################
+## Bandit Security Scan      ##
+###############################
+###############################
+name: Bandit Security Scan
+
+# Run this workflow every time code is pushed
+on: [push, pull_request]
+
+jobs:
+  bandit:
+    # Name the Job
+    name: Bandit Security Scanner
+    # Set the agent to run on
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the code
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      # Install Bandit
+      - name: Install Bandit
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit[toml]
+
+      # Run Bandit scan
+      - name: Run Bandit Security Scan
+        run: |
+          bandit -r . -f json -o bandit-report.json || true
+          bandit -r . -f txt -o bandit-report.txt || true
+          bandit -r . -ll -ii
+
+      # Upload Bandit results
+      - name: Upload Bandit Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-security-report
+          path: |
+            bandit-report.json
+            bandit-report.txt
+
+      # Display summary
+      - name: Display Bandit Summary
+        run: |
+          echo "=== Bandit Security Scan Complete ==="
+          if [ -f bandit-report.txt ]; then
+            cat bandit-report.txt
+          fi
