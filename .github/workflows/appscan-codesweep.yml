@@ -1,0 +1,38 @@
+---
+###################################
+###################################
+## AppScan CodeSweep GitHub      ##
+###################################
+###################################
+name: AppScan CodeSweep
+
+# Run on push and pull requests
+on: [push, pull_request]
+
+jobs:
+  codesweep:
+    name: AppScan CodeSweep Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Checkout the code
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      
+      # Run AppScan CodeSweep
+      - name: Run AppScan CodeSweep
+        uses: HCLAppScan/codesweep-action@v1
+        with:
+          # GitHub token for authentication
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      # Upload results as artifacts
+      - name: Upload AppScan Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: appscan-codesweep-results
+          path: |
+            **/*codesweep*.json
+            **/*codesweep*.sarif
+            **/*.sarif
